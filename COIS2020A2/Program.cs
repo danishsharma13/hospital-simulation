@@ -1,32 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 class Patient
 {
     public int PatientNumber { get; set; }
-    public int LevelOfEmergency { get; set; }
+    public int EmergencyLevel { get; set; }
     public double TreatmentTime { get; set; }
-    public double ArrivalTime { get; set; }
-    public double WaitTime { get; set; } // To record patient's waiting time
+
+    public Patient(int patientNumber, int emergencyLevel, double treatmentTime)
+    {
+        PatientNumber = patientNumber;
+        EmergencyLevel = emergencyLevel;
+        TreatmentTime = treatmentTime;
+    }
 }
 
 class Event : IComparable<Event>
 {
-    public Patient Patient { get; }
+    public Patient Patient { get; set; }
     public EventType Type { get; set; }
     public double Time { get; set; }
+    public int DoctorAssigned { get; set; }
 
-    public Event(Patient patient, EventType type, double time)
+    public Event(Patient patient, EventType type, double time, int doctorAssigned)
     {
-        Patient = patient ?? throw new ArgumentNullException(nameof(patient), "Patient cannot be null");
+        Patient = patient;
         Type = type;
         Time = time;
+        DoctorAssigned = doctorAssigned;
     }
 
-    public int CompareTo(Event other)
+    public int CompareTo(Event? other)
     {
-        return Time.CompareTo(other.Time);
+        return Time.CompareTo(other?.Time ?? 0);
     }
 }
 
@@ -36,216 +42,227 @@ enum EventType
     Departure
 }
 
+class PriorityQueue<T> where T : IComparable<T>
+{
+    private List<T> data;
+
+    public PriorityQueue()
+    {
+        data = new List<T>();
+    }
+
+    public void Enqueue(T item)
+    {
+        data.Add(item);
+        int ci = data.Count - 1;
+        while (ci > 0)
+        {
+            int pi = (ci - 1) / 2;
+            if (data[ci].CompareTo(data[pi]) >= 0) break;
+            Swap(ci, pi);
+            ci = pi;
+        }
+    }
+
+    public T Dequeue()
+    {
+        int li = data.Count - 1;
+        if (li < 0) return default(T)!;
+
+        T frontItem = data[0];
+        data[0] = data[li];
+        data.RemoveAt(li);
+
+        --li;
+        int pi = 0;
+        while (true)
+        {
+            int ci = pi * 2 + 1;
+            if (ci > li) break;
+            int rc = ci + 1;
+            if (rc <= li && data[rc].CompareTo(data[ci]) < 0)
+                ci = rc;
+            if (data[pi].CompareTo(data[ci]) <= 0) break;
+            Swap(pi, ci);
+            pi = ci;
+        }
+        return frontItem;
+    }
+
+    public T Peek()
+    {
+        return data.Count > 0 ? data[0] : default(T)!;
+    }
+
+    public int Count()
+    {
+        return data.Count;
+    }
+
+    private void Swap(int i, int j)
+    {
+        T tmp = data[i];
+        data[i] = data[j];
+        data[j] = tmp;
+    }
+}
+
 class Simulation
 {
-    private List<Queue<Patient>> waitingQueues;
-    private List<bool> doctorAvailability; // To track doctor availability
-    private List<Event> eventQueue = new List<Event>();
+    private readonly int NumberOfDoctors;
+    private readonly double AverageArrivalTime;
+    private readonly double TreatmentTimeT;
+    private readonly int NumberOfRuns = 10;
 
-    public Simulation(int numberOfDoctors)
+    private PriorityQueue<Event>? eventQueue;
+    private Random random = new Random();
+
+    public Simulation(int numberOfDoctors, double averageArrivalTime, double treatmentTimeT)
     {
-        waitingQueues = new List<Queue<Patient>>();
-        doctorAvailability = new List<bool>();
-
-        for (int i = 0; i < 3; i++)
-        {
-            waitingQueues.Add(new Queue<Patient>());
-        }
-
-        for (int i = 0; i < numberOfDoctors; i++)
-        {
-            doctorAvailability.Add(true); // Initialize all doctors as available
-        }
+        NumberOfDoctors = numberOfDoctors;
+        AverageArrivalTime = averageArrivalTime;
+        TreatmentTimeT = treatmentTimeT;
     }
 
-    public void Run(double meanTreatmentTime, double meanInterArrivalTime, int minPatients, int maxPatients)
+    public double RunSimulation()
     {
-        Random random = new Random();
-        List<Patient> patients = new List<Patient>(); // To store patients for performance measurement
-        int patientsProcessed = 0; // Counter for processed patients
+        double totalWaitTime = 0;
 
-        while (eventQueue.Count > 0 && (patientsProcessed < maxPatients || patientsProcessed < minPatients))
+        for (int run = 0; run < NumberOfRuns; run++)
         {
-            eventQueue.Sort();
-            Event currentEvent = eventQueue[0];
-            eventQueue.RemoveAt(0);
+            eventQueue = new PriorityQueue<Event>();
+            Queue<Event>[] waitingQueues = new Queue<Event>[3];
 
-            if (currentEvent.Type == EventType.Arrival)
+            for (int i = 0; i < waitingQueues.Length; i++)
             {
-                Patient patient = currentEvent.Patient;
-                patients.Add(patient); // Store the patient for performance measurement
+                waitingQueues[i] = new Queue<Event>();
+            }
 
-                int availableDoctor = FindAvailableDoctor();
-                if (availableDoctor >= 0)
+            double currentTime = 0;
+            int patientNumber = 1;
+
+            while (currentTime <= 360)
+            {
+                double interarrivalTime = GenerateExponential(AverageArrivalTime);
+                currentTime += interarrivalTime;
+
+                int emergencyLevel = GenerateEmergencyLevel();
+                double treatmentTime = GenerateExponential(TreatmentTimeT * Math.Pow(2, emergencyLevel - 1));
+
+                var arrivalEvent = new Event(new Patient(patientNumber, emergencyLevel, treatmentTime), EventType.Arrival, currentTime, 0);
+                eventQueue.Enqueue(arrivalEvent);
+                patientNumber++;
+            }
+
+            int doctorIndex = 0;
+            while (eventQueue.Count() > 0)
+            {
+                Event currentEvent = eventQueue.Dequeue();
+
+                if (currentEvent.Type == EventType.Arrival)
                 {
-                    AssignPatientToDoctor(patient, availableDoctor);
-                    double departureTime = currentEvent.Time + patient.TreatmentTime;
-                    Event departureEvent = new Event(patient, EventType.Departure, departureTime);
-                    eventQueue.Add(departureEvent);
-                    Console.WriteLine($"Patient {patient.PatientNumber} (Level {patient.LevelOfEmergency}) has arrived and assigned to Doctor {availableDoctor}.");
+                    int availableDoctor = FindAvailableDoctor(doctorIndex);
+                    if (availableDoctor >= 0)
+                    {
+                        currentEvent.DoctorAssigned = availableDoctor;
+                        currentEvent.Type = EventType.Departure;
+                        currentEvent.Time += currentEvent.Patient.TreatmentTime;
+                        eventQueue.Enqueue(currentEvent);
+                    }
+                    else
+                    {
+                        waitingQueues[currentEvent.Patient.EmergencyLevel - 1].Enqueue(currentEvent);
+                    }
                 }
                 else
                 {
-                    waitingQueues[patient.LevelOfEmergency - 1].Enqueue(patient);
-                    patient.WaitTime = currentEvent.Time - patient.ArrivalTime; // Calculate waiting time
-                    Console.WriteLine($"Patient {patient.PatientNumber} (Level {patient.LevelOfEmergency}) has arrived and is waiting.");
-                }
-
-                double interArrivalTime = -meanInterArrivalTime * Math.Log(random.NextDouble());
-                double nextArrivalTime = currentEvent.Time + interArrivalTime;
-                Patient nextPatient = GenerateRandomPatient(meanTreatmentTime);
-                nextPatient.ArrivalTime = currentEvent.Time; // Record patient arrival time
-                Event nextArrivalEvent = new Event(nextPatient, EventType.Arrival, nextArrivalTime);
-                eventQueue.Add(nextArrivalEvent);
-
-                // Increment the counter for processed patients
-                patientsProcessed++;
-            }
-            else if (currentEvent.Type == EventType.Departure)
-            {
-                int levelOfEmergency = currentEvent.Patient.LevelOfEmergency;
-                if (waitingQueues[levelOfEmergency - 1].Count > 0)
-                {
-                    Patient waitingPatient = waitingQueues[levelOfEmergency - 1].Dequeue();
-                    AssignPatientToDoctor(waitingPatient, levelOfEmergency);
-                    double departureTime = currentEvent.Time + waitingPatient.TreatmentTime;
-                    Event departureEvent = new Event(waitingPatient, EventType.Departure, departureTime);
-                    eventQueue.Add(departureEvent);
-                    Console.WriteLine($"Patient {waitingPatient.PatientNumber} (Level {waitingPatient.LevelOfEmergency}) has departed from Doctor {levelOfEmergency}.");
-                }
-                else
-                {
-                    doctorAvailability[levelOfEmergency - 1] = true; // Make the doctor available
-                    Console.WriteLine($"Doctor {levelOfEmergency} is now available.");
+                    totalWaitTime += (currentEvent.Time - currentTime);
+                    if (waitingQueues[currentEvent.Patient.EmergencyLevel - 1].Count > 0)
+                    {
+                        Event nextPatient = waitingQueues[currentEvent.Patient.EmergencyLevel - 1].Dequeue();
+                        nextPatient.Type = EventType.Departure;
+                        nextPatient.DoctorAssigned = currentEvent.DoctorAssigned;
+                        nextPatient.Time = currentEvent.Time + nextPatient.Patient.TreatmentTime;
+                        eventQueue.Enqueue(nextPatient);
+                    }
                 }
             }
         }
 
-        // Calculate and output performance measures for the processed patients
-        foreach (var patient in patients)
+        return totalWaitTime / NumberOfRuns;
+    }
+
+    public PriorityQueue<Event>? GetEventQueue()
+    {
+        return eventQueue;
+    }
+
+    private double GenerateExponential(double mean)
+    {
+        double u = random.NextDouble();
+        return -mean * Math.Log(1 - u);
+    }
+
+    private int GenerateEmergencyLevel()
+    {
+        double u = random.NextDouble();
+        if (u < 0.6) return 1;
+        if (u < 0.9) return 2;
+        return 3;
+    }
+
+    private int FindAvailableDoctor(int startIndex)
+    {
+        for (int i = startIndex; i < NumberOfDoctors; i++)
         {
-            if (patient.WaitTime >= 0)
+            if (i % NumberOfDoctors == startIndex && i != startIndex)
             {
-                Console.WriteLine($"Patient {patient.PatientNumber} (Level {patient.LevelOfEmergency}) - Waiting Time: {patient.WaitTime} seconds");
-            }
-            else
-            {
-                Console.WriteLine($"Patient {patient.PatientNumber} (Level {patient.LevelOfEmergency}) - Left without treatment due to no available doctor.");
+                return -1; // All doctors are busy
             }
         }
-    }
-
-    private int FindAvailableDoctor()
-    {
-        for (int i = 0; i < doctorAvailability.Count; i++)
-        {
-            if (doctorAvailability[i])
-            {
-                doctorAvailability[i] = false; // Set the doctor as busy
-                return i; // Return the doctor index
-            }
-        }
-        return -1; // No available doctor
-    }
-
-    private void AssignPatientToDoctor(Patient patient, int doctor)
-    {
-        if (doctorAvailability.Count > doctor && doctorAvailability[doctor])
-        {
-            // The specified doctor is available, assign the patient
-            doctorAvailability[doctor] = false; // Set the doctor as busy
-            patient.WaitTime = 0; // The patient did not have to wait
-        }
-        else
-        {
-            // The specified doctor is not available, search for the next available doctor
-            int nextAvailableDoctor = FindNextAvailableDoctor(doctor);
-
-            if (nextAvailableDoctor != -1)
-            {
-                // Assign the patient to the next available doctor
-                doctorAvailability[nextAvailableDoctor] = false; // Set the doctor as busy
-                patient.WaitTime = 0; // The patient did not have to wait
-            }
-            else
-            {
-                // Handle the case where no doctor is available
-                patient.WaitTime = -1; // Indicate that the patient could not be assigned to a doctor
-            }
-        }
-    }
-
-    private int FindNextAvailableDoctor(int currentDoctor)
-    {
-        int nextAvailableDoctor = currentDoctor + 1;
-
-        while (nextAvailableDoctor != currentDoctor)
-        {
-            if (nextAvailableDoctor >= doctorAvailability.Count)
-            {
-                nextAvailableDoctor = 0; // Wrap around to the first doctor
-            }
-
-            if (doctorAvailability[nextAvailableDoctor])
-            {
-                return nextAvailableDoctor; // Found an available doctor
-            }
-
-            nextAvailableDoctor++;
-        }
-
-        return -1; // No available doctor found
-    }
-
-    private Patient GenerateRandomPatient(double meanTreatmentTime)
-    {
-        Random random = new Random();
-        Patient patient = new Patient
-        {
-            PatientNumber = random.Next(1, 1000),
-            LevelOfEmergency = DetermineLevelOfEmergency(random),
-            ArrivalTime = 0
-        };
-
-        double scalingFactor = DetermineScalingFactor(patient.LevelOfEmergency);
-        patient.TreatmentTime = -meanTreatmentTime * scalingFactor * Math.Log(random.NextDouble());
-
-        return patient;
-    }
-
-    private int DetermineLevelOfEmergency(Random random)
-    {
-        double r = random.NextDouble();
-        if (r < 0.6)
-            return 1;
-        else if (r < 0.9)
-            return 2;
-        else
-            return 3;
-    }
-
-    private double DetermineScalingFactor(int levelOfEmergency)
-    {
-        if (levelOfEmergency == 2)
-            return 2;
-        if (levelOfEmergency == 3)
-            return 4;
-        return 1;
+        return startIndex;
     }
 }
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         int numberOfDoctors = 5;
-        Simulation simulation = new Simulation(numberOfDoctors);
+        double averageArrivalTime = 10;
+        double treatmentTimeT = 5;
+        Simulation simulation = new Simulation(numberOfDoctors, averageArrivalTime, treatmentTimeT);
+        double averageWaitTime = simulation.RunSimulation();
 
-        double meanTreatmentTime = 15;
-        double meanInterArrivalTime = 10;
-        int minPatients = 10; // Specify the minimum number of patients
-        int maxPatients = 50; // Specify the maximum number of patients
+        Console.WriteLine($"Average Wait Time: {averageWaitTime:F2} minutes");
 
-        simulation.Run(meanTreatmentTime, meanInterArrivalTime, minPatients, maxPatients);
+        // Access the eventQueue using the GetEventQueue method
+        // Access the eventQueue using the GetEventQueue method
+        PriorityQueue<Event>? eventQueue = simulation.GetEventQueue();
+
+        if (eventQueue != null)
+        {
+            while (eventQueue.Count() > 0)
+            {
+                Event currentEvent = eventQueue.Dequeue();
+
+                if (currentEvent.Type == EventType.Arrival)
+                {
+                    if (currentEvent.DoctorAssigned == 0)
+                    {
+                        Console.WriteLine($"{currentEvent.Time:HH:mm:ss} - Patient {currentEvent.Patient.PatientNumber} ({currentEvent.Patient.EmergencyLevel}) arrives and is seated in the waiting room.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{currentEvent.Time:HH:mm:ss} - Patient {currentEvent.Patient.PatientNumber} ({currentEvent.Patient.EmergencyLevel}) arrives and is assigned to Doctor {currentEvent.DoctorAssigned}.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"{currentEvent.Time:HH:mm:ss} - Doctor {currentEvent.DoctorAssigned} completes treatment of Patient {currentEvent.Patient.PatientNumber}.");
+                }
+            }
+        }
     }
 }
+ 
