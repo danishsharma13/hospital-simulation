@@ -6,39 +6,21 @@
 // Summary: The Patient class is used to represent a person and their emergency details
 class Patient
 {
-    // Data members
-    private int patient_number;
-    private int level_of_emergency;
-    private double treatment_time;
-
-    // Get PatientNumber
-    public int PatientNumber
-    {
-        get { return patient_number; }
-    }
-
-    // Get LevelOfEmergency
-    public int LevelOfEmergency
-    { 
-        get { return level_of_emergency;} 
-    }
-
-    // Get and Set TreatmentTime
-    public double TreatmentTime
-    {
-        get { return treatment_time;}
-        set { treatment_time = value; }
-    }
+    // Data members - Getter and Private Setter
+    public int PatientNumber { get; private set; }
+    public int LevelOfEmergency { get; private set; }
+    public double TreatmentTime { get; private set; }
 
     // Summary: 2-args constructor that creates a Patient object and takes in the
     //          arguments of int PatientNumber and int mean of TreatmentTime
     public Patient(int patientNumber, int meanTime)
     {
-        this.patient_number = PatientNumber;
+        this.PatientNumber = patientNumber;
         // Generate Level Of Emergency for the patient
-        this.level_of_emergency = GenerateLevelOfEmergency();
-
-
+        this.LevelOfEmergency = GenerateLevelOfEmergency();
+        // Generate Treatment time for the paitent based on 
+        // level of emergency
+        this.TreatmentTime = GenerateTreatmentTime(meanTime);
     }
 
     // Summary: Helper method that generates Patient's level of emergency
@@ -78,7 +60,36 @@ class Patient
     // (mainly used when a treatment needs to swapped with higher emergency level)
     public void ReduceTreatmentTime(double reducedSeconds)
     {
-        this.treatment_time -= reducedSeconds;
+        this.TreatmentTime -= reducedSeconds;
+    }
+}
+
+// -------------------------------------------------------------------------------------
+
+// Summary: Event type is an enum class that will store paitent's event type
+enum EventType
+{
+    ARRIVAL,
+    DEPARTURE
+}
+
+// -------------------------------------------------------------------------------------
+
+// Summary: Event is a class that will store paitent's event type
+class Event
+{
+    public Patient Patient { get; private set; }
+    public EventType Type { get; private set; }
+    public int DoctorAssigned { get; private set; }
+    public double EventTime { get; private set; }
+
+    public Event(Patient patient, EventType type, int doctorAssigned, double eventTime)
+    {
+        Patient = patient;
+        Type = type;
+        DoctorAssigned = type == EventType.DEPARTURE ? doctorAssigned : -1; // -1 indicates no doctor assigned for arrivals
+        EventTime = eventTime;
     }
 
+    // Additional methods and logic can be added as needed
 }
