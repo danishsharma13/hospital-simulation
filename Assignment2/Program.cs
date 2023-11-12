@@ -129,24 +129,27 @@ class Event : IComparable
 
 
 // class Priority Queue
-// Implementation:  Binary heap
+// Implementation:  Binary heap ***(Professor's code)***
 // Summary: Priority Queue class is taken from blackboard as per the assignment's
 //          criteria, it stores future events that is prioritized by paitient's
 //          arrival.
+// Note: Since we are allowed to use PriorityQueue from blackboard, I have
+//       edited the class to work with Event class as well as implemented
+//       PeekAt(int) and RemoveAt(int) methods.
 
-public class PriorityQueue<T>
+public class PriorityQueue<T> where T : IComparable
 {
     private T[] A;         // Linear array of items (Generic)
     private int capacity;  // Maximum number of items in a priority queue
     private int count;     // Number of items in the priority queue
 
-    // Constructor 1
-    // Create an empty priority queue
+    // Summary: 1-args  constructor to create the PriorityQueue object
+    //          Create an empty priority queue with given length
     // Time complexity:  O(1)
 
-    public PriorityQueue()
+    public PriorityQueue(int queueLength)
     {
-        capacity = 3;
+        capacity = queueLength;
         A = new T[capacity + 1];  // Indexing begins at 1
         MakeEmpty();
     }
@@ -301,4 +304,41 @@ public class PriorityQueue<T>
         else
             return A[1];  // Return the root item (highest priority)
     }
+
+    // Summary: PeekAt(int) method returns an item at a certain index
+    //          within the priority queue heap
+    public T PeekAt(int i)
+    {
+        // If i is less 1 or greater than count then throw exception
+        // Since indexing starts at 1 and not 0
+        if (i < 1 || i > count)
+        {
+            throw new ArgumentOutOfRangeException("The index is out of range, please enter valid index!");
+        }
+
+        return A[i];
+    }
+
+
+    // Summary: RemoveAt(int) method removes an item at a certain index
+    //          within the priority queue heap
+    public void RemoveAt(int i)
+    {
+        // If i is less 1 or greater than count then throw exception
+        // Since indexing starts at 1 and not 0
+        if (i < 1 || i > count)
+        {
+            throw new ArgumentOutOfRangeException("Index is out of range.");
+        }
+
+        // Replace the deleted item with the last item in the heap
+        A[i] = A[count--];
+
+        // Since an item is removed from the middle (possibily) we need to 
+        // run Perolate Down and Up to make sure Priority Queue is not
+        // violating its data structure
+        PercolateDown(i);
+        PercolateUp(i);
+    }
+
 }
