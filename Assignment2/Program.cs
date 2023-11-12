@@ -86,12 +86,12 @@ class Event : IComparable
     public Patient Patient { get; private set; }
     public EventType Type { get; private set; }
     public int DoctorAssigned { get; private set; }
-    public double EventTime { get; private set; }
+    public int EventTime { get; private set; }
 
 
     // Summary: 4-args constructor that creates an Event object to populate the object's
     //          data members with appropriate information
-    public Event(Patient patient, EventType type, int doctorAssigned, double eventTime)
+    public Event(Patient patient, EventType type, int doctorAssigned, int eventTime)
     {
         // Populate data members with appropriate information about the Event
         this.Patient = patient;
@@ -127,7 +127,6 @@ class Event : IComparable
 
 // -------------------------------------------------------------------------------------
 
-
 // class Priority Queue
 // Implementation:  Binary heap ***(Professor's code)***
 // Summary: Priority Queue class is taken from blackboard as per the assignment's
@@ -143,13 +142,13 @@ public class PriorityQueue<T> where T : IComparable
     private int capacity;  // Maximum number of items in a priority queue
     private int count;     // Number of items in the priority queue
 
-    // Summary: 1-args  constructor to create the PriorityQueue object
-    //          Create an empty priority queue with given length
+    // Summary: 0-args  constructor to create the PriorityQueue object
+    //          Create an empty priority queue with length 5
     // Time complexity:  O(1)
 
-    public PriorityQueue(int queueLength)
+    public PriorityQueue()
     {
-        capacity = queueLength;
+        capacity = 5;
         A = new T[capacity + 1];  // Indexing begins at 1
         MakeEmpty();
     }
@@ -305,6 +304,46 @@ public class PriorityQueue<T> where T : IComparable
             return A[1];  // Return the root item (highest priority)
     }
 
+    // BuildHeap
+    // Create a binary heap from an arbitrary array
+    // Time complexity:  O(n)
+    private void BuildHeap()
+    {
+        int i;
+
+        // Percolate down from the last parent to the root (first parent)
+        for (i = count / 2; i >= 1; i--)
+        {
+            PercolateDown(i);
+        }
+    }
+
+    // HeapSort
+    // Sort and return inputArray
+    // Time complexity:  O(n log n)
+    public void HeapSort(T[] inputArray)
+    {
+        int i;
+
+        capacity = count = inputArray.Length;
+
+        // Copy input array to A (indexed from 1)
+        for (i = capacity - 1; i >= 0; i--)
+        {
+            A[i + 1] = inputArray[i];
+        }
+
+        // Create a binary heap
+        BuildHeap();
+
+        // Remove the next item and place it into the input (output) array
+        for (i = 0; i < capacity; i++)
+        {
+            inputArray[i] = Front();
+            Remove();
+        }
+    }
+
     // Summary: PeekAt(int) method returns an item at a certain index
     //          within the priority queue heap
     public T PeekAt(int i)
@@ -341,4 +380,55 @@ public class PriorityQueue<T> where T : IComparable
         PercolateUp(i);
     }
 
+}
+
+// -------------------------------------------------------------------------------------
+
+// class Simulation
+// Summary: Simulation class is used to run a simulation based on treatment time, arrival
+//          time of paitents, and number of doctors available
+class Simulation
+{
+    // Data members
+    private PriorityQueue<Event>? Priority;
+    private Queue<Event>? waitingQueue1;
+    private Queue<Event>? waitingQueue2;
+    private Queue<Event>? waitingQueue3;
+
+    // Summary: 0-args constructor to initialize the data members
+    public Simulation()
+    {
+        this.Priority = new PriorityQueue<Event>();
+        this.waitingQueue1 = new Queue<Event>();
+        this.waitingQueue2 = new Queue<Event>(); 
+        this.waitingQueue3 = new Queue<Event>();
+    }
+
+    // Summary: RunSimulation(int, int, int) will run the simulation based on the 
+    //          treatment time, arrival time, and number of doctors available
+    public void RunSimulation(int meanTime, int meanArrival, int numberOfdoctors)
+    {
+        // Create array of doctors (0s) where
+        // 0: available, 1-3: treating emergency level
+        int[] doctorStatus = new int[numberOfdoctors];
+
+
+    }
+
+    // Summary: ConvertSeconds(int) is used to convert the int seconds into
+    //          readable string that is used to print the events
+    public string ConvertSeconds(int seconds)
+    {
+        // 1 hour = 3600 seconds, so dividing it will give us the hour
+        int hours = seconds / 3600;
+        // 1 minute is 60 seconds, but we need to remove the hour from it
+        // so we seconds mod 3600 to get the remaining seconds and divide
+        // from 60
+        int minutes = (seconds % 3600) / 60;
+        // To get seconds we can just seconds mod 60 so we can have the 
+        // seconds remaining after taking away hours and minutes from it
+        int sec = seconds % 60;
+
+        return $"{hours:D2}:{minutes:D2}:{sec:D2}";
+    }
 }
