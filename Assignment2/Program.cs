@@ -13,18 +13,18 @@ class Patient
 
     // Summary: 2-args constructor that creates a Patient object and takes in the
     //          arguments of int PatientNumber and int mean of TreatmentTime
-    public Patient(int patientNumber, int meanTime)
+    public Patient(int patientNumber, int meanTreatment)
     {
         this.PatientNumber = patientNumber;
         // Generate Level Of Emergency for the patient
-        this.LevelOfEmergency = GenerateLevelOfEmergency();
+        this.LevelOfEmergency = this.GenerateLevelOfEmergency();
         // Generate Treatment time for the paitent based on 
         // level of emergency
-        this.TreatmentTime = GenerateTreatmentTime(meanTime);
+        this.TreatmentTime = this.GenerateTreatmentTime(meanTreatment);
     }
 
-    // Summary: Helper method that generates Patient's level of emergency
-    public int GenerateLevelOfEmergency()
+    // Summary: Private helper method that generates Patient's level of emergency
+    private int GenerateLevelOfEmergency()
     {
         // Generate a random number to convert it into Level Of Emergency
         Random random = new Random();
@@ -38,15 +38,15 @@ class Patient
         else return 3;
     }
 
-    // Summary: Helper method that generates treatment time for patient
-    public double GenerateTreatmentTime(int meanTime)
+    // Summary: Private helper method that generates treatment time for patient
+    private double GenerateTreatmentTime(int meanTreatment)
     {
         // Generate a random number to use it as "u" in T ln(u)
         Random random = new Random();
         double randomNumber = random.NextDouble();
         
         // Get the T ln(u)
-        double logMeanTime = meanTime * Math.Log(randomNumber);
+        double logMeanTime = -1 * meanTreatment * Math.Log(randomNumber);
 
         // If level == 1 then return logMeanTime
         // If level == 2 then return 2 * logMeanTime
@@ -406,13 +406,56 @@ class Simulation
 
     // Summary: RunSimulation(int, int, int) will run the simulation based on the 
     //          treatment time, arrival time, and number of doctors available
-    public void RunSimulation(int meanTime, int meanArrival, int numberOfdoctors)
+    public void RunSimulation(int meanTreatment, int meanArrival, int numberOfdoctors)
     {
+        // GeneratePatients in PriorityQueue
+        GeneratePatients(meanTreatment, meanArrival);
+
         // Create array of doctors (0s) where
         // 0: available, 1-3: treating emergency level
         int[] doctorStatus = new int[numberOfdoctors];
 
+        // currentTime variable that starts from 9am (0900), seconds 32,400
+        int currentTime = 32400;
 
+        // While loop to run simulation that will take arrival of patients and store departure
+        while (this.Priority.Size() > 0)
+        {
+
+        }
+
+
+    }
+
+    // Summary: GeneratePatients(int, int) generates patients' arrival in the PriorityQueue
+    //          based on the meanTreatment and meanArrival
+    private void GeneratePatients(int meanTreatment, int meanArrival)
+    {
+        // currentTime variable that starts from 9am (0900), seconds 32,400
+        int currentTime = 32400;
+        int patientNumber = 1;
+
+        // Creating arrival events in the PriorityQueue
+        while (currentTime <= 54000)
+        {
+            // Creating random numbers around the meanArrival (+-20)
+            Random random = new Random();
+            int randomArrival = random.Next(meanArrival - 20, meanArrival + 20);
+
+            // If currentTime plus randomArrival is less then 54000 (3pm) then create patient
+            // and insert the patient in priority queue
+            if ((currentTime + randomArrival) <= 54000)
+            {
+                Event arrivalEvent = new Event(new Patient(patientNumber, meanTreatment), EventType.ARRIVAL, -1, currentTime + randomArrival);
+                this.Priority.Insert(arrivalEvent);
+            }
+
+            // Adding randomArrival to the currentTime so we do not take patients after
+            // 3pm (1500), seconds 54,000
+            currentTime += randomArrival;
+
+            patientNumber++;
+        }
     }
 
     // Summary: ConvertSeconds(int) is used to convert the int seconds into
@@ -430,5 +473,55 @@ class Simulation
         int sec = seconds % 60;
 
         return $"{hours:D2}:{minutes:D2}:{sec:D2}";
+    }
+}
+
+
+class Program
+{
+    public static void Main(String[] args)
+    {
+        PriorityQueue<Event>? priorityQueue = new PriorityQueue<Event>();
+
+        // currentTime variable that starts from 9am (0900), seconds 32,400
+        int currentTime = 32400;
+        int patientNumber = 0;
+
+        // Creating arrival events in the PriorityQueue
+        while (currentTime <= 54000)
+        {
+            // Creating random numbers around the meanArrival (+-20)
+            Random random = new Random();
+            int randomArrival = random.Next(600 - 20, 600 + 20);
+
+            // If currentTime plus randomArrival is less then 54000 (3pm) then create patient
+            // and insert the patient in priority queue
+            if ((currentTime + randomArrival) <= 54000)
+            {
+                Event arrivalEvent = new Event(new Patient(patientNumber, 300), EventType.ARRIVAL, -1, currentTime + randomArrival);
+                priorityQueue.Insert(arrivalEvent);
+            }
+
+            // Adding randomArrival to the currentTime so we do not take patients after
+            // 3pm (1500), seconds 54,000
+            currentTime += randomArrival;
+
+            patientNumber++;
+        }
+
+        while (priorityQueue.Size() > 0)
+        {
+            Console.WriteLine("Patient(" + priorityQueue.Front().Patient.PatientNumber + ") arrived at " + priorityQueue.Front().EventTime + " Level(" + priorityQueue.Front().Patient.LevelOfEmergency + ")");
+            priorityQueue.RemoveAt(1);
+        }
+
+        /*int i = 0;
+        while (i < 20)
+        {
+            Patient p = new Patient(i, 300);
+            Console.WriteLine("Patient(" + p.PatientNumber + ") - Level: " + p.LevelOfEmergency + ", Treatment: " + p.TreatmentTime);
+            i++;
+        }*/
+
     }
 }
