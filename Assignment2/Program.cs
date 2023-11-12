@@ -1,6 +1,6 @@
-﻿// Name: Danish Sharma
-// StudentID: 0623392
-
+﻿// Group members: Danish Sharma, Sami Ali, Tushar Dhiman
+// Group members IDs: 0623392, 0791752, 0757538
+// Assignment 2 : Hospital Simulation using Priority Queues
 
 // class Patient
 // Summary: The Patient class is used to represent a person and their emergency details
@@ -420,12 +420,16 @@ class Simulation
         // currentTime variable that starts from 9am (0900), seconds 32,400
         int currentTime = 32400;
 
+        // Variables for level3-1 wait time and total number of patients for each
+        int waitTime3 = 0, waitTime2 = 0, waitTime1 = 0;
+        int numOf3 = 0, numOf2 = 0, numOf1 = 0;
+
         // While loop to run simulation that will take arrival of patients and store departure
         while (this.Priority.Size() > 0)
         {
             // Get the currentEvent and remove from Priority
             Event currentEvent = Priority.Front();
-            Priority.Remove();
+            Priority.Remove();            
 
             // Set currentEvent time to currentTime since the "that" much time is passed
             currentTime = currentEvent.EventTime;
@@ -436,6 +440,11 @@ class Simulation
             // the waitingQueue if anyone is waiting or take next Patient in Priority
             if (currentEvent.Type == EventType.ARRIVAL)
             {
+                // Get number of patients for each level
+                if (currentEvent.Patient.LevelOfEmergency == 3) numOf3++;
+                else if (currentEvent.Patient.LevelOfEmergency == 2) numOf2++;
+                else if (currentEvent.Patient.LevelOfEmergency == 1) numOf1++;
+
                 // Get index of available doctors
                 int availableDoctorIndex = AvailableDoctor(doctorStatus, currentEvent.Patient.LevelOfEmergency);
 
@@ -507,7 +516,7 @@ class Simulation
                         Console.WriteLine(ConvertSeconds(currentTime) + " - Patient "
                             + currentEvent.Patient.PatientNumber + " (" + currentEvent.Patient.LevelOfEmergency
                             + ") arrives and is assigned to Doctor " + (availableDoctorIndex + 1) + 
-                            ", pre-empting Patient" + previousPatient.PatientNumber +" (" + previousPatient.LevelOfEmergency + ").");
+                            ", pre-empting Patient " + previousPatient.PatientNumber +" (" + previousPatient.LevelOfEmergency + ").");
                     }
                 }
             }
@@ -524,41 +533,53 @@ class Simulation
                 // the doctor will take them and start their departure event
                 if (waitingQueue3.Count > 0)
                 {
-                    // Get the waiting patient
-                    Patient waitingPatient = waitingQueue3.Dequeue().Patient;
+                    // Get the waiting event and patient
+                    Event waitingEvent = waitingQueue3.Dequeue();
+                    Patient waitingPatient = waitingEvent.Patient;
                     // Assign the patient in waiting queue to the doctor, start departure event and store it in the queue
                     doctorStatus[currentEvent.DoctorAssigned - 1] = waitingPatient.LevelOfEmergency;
                     Event departureEvent = new Event(waitingPatient, EventType.DEPARTURE,
                         currentEvent.DoctorAssigned, currentTime + waitingPatient.TreatmentTime);
                     Priority.Insert(departureEvent);
+
+                    // Add wait time in waitTime3
+                    waitTime3 += currentTime - waitingEvent.EventTime;
 
                     // Console output
                     Console.Write(" and is assigned to Patient " + waitingPatient.PatientNumber + ".\n");
                 }
                 else if (waitingQueue2.Count > 0)
                 {
-                    // Get the waiting patient
-                    Patient waitingPatient = waitingQueue2.Dequeue().Patient;
+                    // Get the waiting event and patient
+                    Event waitingEvent = waitingQueue2.Dequeue();
+                    Patient waitingPatient = waitingEvent.Patient;
 
                     // Assign the patient in waiting queue to the doctor, start departure event and store it in the queue
                     doctorStatus[currentEvent.DoctorAssigned - 1] = waitingPatient.LevelOfEmergency;
                     Event departureEvent = new Event(waitingPatient, EventType.DEPARTURE,
                         currentEvent.DoctorAssigned, currentTime + waitingPatient.TreatmentTime);
                     Priority.Insert(departureEvent);
+
+                    // Add wait time in waitTime3
+                    waitTime2 += currentTime - waitingEvent.EventTime;
 
                     // Console output
                     Console.Write(" and is assigned to Patient " + waitingPatient.PatientNumber + ".\n");
                 }
                 else if (waitingQueue1.Count > 0)
                 {
-                    // Get the waiting patient
-                    Patient waitingPatient = waitingQueue1.Dequeue().Patient;
+                    // Get the waiting event and patient
+                    Event waitingEvent = waitingQueue1.Dequeue();
+                    Patient waitingPatient = waitingEvent.Patient;
 
                     // Assign the patient in waiting queue to the doctor, start departure event and store it in the queue
                     doctorStatus[currentEvent.DoctorAssigned - 1] = waitingPatient.LevelOfEmergency;
                     Event departureEvent = new Event(waitingPatient, EventType.DEPARTURE,
                         currentEvent.DoctorAssigned, currentTime + waitingPatient.TreatmentTime);
                     Priority.Insert(departureEvent);
+
+                    // Add wait time in waitTime3
+                    waitTime1 += currentTime - waitingEvent.EventTime;
 
                     // Console output
                     Console.Write(" and is assigned to Patient " + waitingPatient.PatientNumber + ".\n");
@@ -566,6 +587,15 @@ class Simulation
                 else Console.Write(".\n");
             }
         }
+
+        // Output the total average wait time for each level and all together with numbers of doctors available
+        Console.WriteLine("\n\nLevel 3 Total Wait Time = " + waitTime3 + ", Number of Patient = " + numOf3 + ", Average Wait Time = " + ((double)waitTime3/(double)numOf3));
+        Console.WriteLine("Level 2 Total Wait Time = " + waitTime2 + ", Number of Patient = " + numOf2 + ", Average Wait Time = " + ((double)waitTime2 / (double)numOf2));
+        Console.WriteLine("Level 1 Total Wait Time = " + waitTime1 + ", Number of Patient = " + numOf1 + ", Average Wait Time = " + ((double)waitTime1 / (double)numOf1));
+        int totalWaitTime = waitTime1 + waitTime2 + waitTime3;
+        int totalPatients = numOf1 + numOf2 + numOf3;
+        Console.WriteLine("Total Wait Time = " + totalWaitTime + ", Total Number of Patient = " 
+            + totalPatients + ", Total Average Wait Time = " + ((double)totalWaitTime / (double)totalPatients));
     }
 
     // Summary: Private helper function that returns the index of doctor that is available
@@ -647,50 +677,7 @@ class Program
 {
     public static void Main(String[] args)
     {
-
         Simulation s = new Simulation();
-        s.RunSimulation(300, 300, 2);
-        /*PriorityQueue<Event>? priorityQueue = new PriorityQueue<Event>();
-
-        // currentTime variable that starts from 9am (0900), seconds 32,400
-        int currentTime = 32400;
-        int patientNumber = 0;
-
-        // Creating arrival events in the PriorityQueue
-        while (currentTime <= 54000)
-        {
-            // Creating random numbers around the meanArrival (+-20)
-            Random random = new Random();
-            int randomArrival = random.Next(600 - 20, 600 + 20);
-
-            // If currentTime plus randomArrival is less then 54000 (3pm) then create patient
-            // and insert the patient in priority queue
-            if ((currentTime + randomArrival) <= 54000)
-            {
-                Event arrivalEvent = new Event(new Patient(patientNumber, 300), EventType.ARRIVAL, -1, currentTime + randomArrival);
-                priorityQueue.Insert(arrivalEvent);
-            }
-
-            // Adding randomArrival to the currentTime so we do not take patients after
-            // 3pm (1500), seconds 54,000
-            currentTime += randomArrival;
-
-            patientNumber++;
-        }
-
-        while (priorityQueue.Size() > 0)
-        {
-            Console.WriteLine("Patient(" + priorityQueue.Front().Patient.PatientNumber + ") arrived at " + priorityQueue.Front().EventTime + " Level(" + priorityQueue.Front().Patient.LevelOfEmergency + ")");
-            priorityQueue.RemoveAt(1);
-        }
-*/
-        /*int i = 0;
-        while (i < 20)
-        {
-            Patient p = new Patient(i, 300);
-            Console.WriteLine("Patient(" + p.PatientNumber + ") - Level: " + p.LevelOfEmergency + ", Treatment: " + p.TreatmentTime);
-            i++;
-        }*/
-
+        s.RunSimulation(300, 100, 4);
     }
 }
