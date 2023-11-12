@@ -4,12 +4,14 @@
 
 // class Patient
 // Summary: The Patient class is used to represent a person and their emergency details
+using System.Reflection.Emit;
+
 class Patient
 {
     // Data members - Getter and Private Setter
     public int PatientNumber { get; private set; }
     public int LevelOfEmergency { get; private set; }
-    public double TreatmentTime { get; private set; }
+    public int TreatmentTime { get; private set; }
 
     // Summary: 2-args constructor that creates a Patient object and takes in the
     //          arguments of int PatientNumber and int mean of TreatmentTime
@@ -39,7 +41,7 @@ class Patient
     }
 
     // Summary: Private helper method that generates treatment time for patient
-    private double GenerateTreatmentTime(int meanTreatment)
+    private int GenerateTreatmentTime(int meanTreatment)
     {
         // Generate a random number to use it as "u" in T ln(u)
         Random random = new Random();
@@ -51,14 +53,14 @@ class Patient
         // If level == 1 then return logMeanTime
         // If level == 2 then return 2 * logMeanTime
         // If level == 3 then return 4 * logMeanTime
-        if (LevelOfEmergency == 1) return logMeanTime;
-        else if (LevelOfEmergency == 2) return 2 * logMeanTime;
-        else return 4 * logMeanTime;
+        if (LevelOfEmergency == 1) return (int)logMeanTime;
+        else if (LevelOfEmergency == 2) return 2 * (int)logMeanTime;
+        else return 4 * (int)logMeanTime;
     }
 
     // Summary: Removing treatment time from patient's treatment
     // (mainly used when a treatment needs to swapped with higher emergency level)
-    public void ReduceTreatmentTime(double reducedSeconds)
+    public void ReduceTreatmentTime(int reducedSeconds)
     {
         this.TreatmentTime -= reducedSeconds;
     }
@@ -421,14 +423,105 @@ class Simulation
         // While loop to run simulation that will take arrival of patients and store departure
         while (this.Priority.Size() > 0)
         {
+            // Get the currentEvent and remove from Priority
+            Event currentEvent = Priority.Front();
+            Priority.Remove();
 
+            // Set currentEvent time to currentTime since the "that" much time is passed
+            currentTime = currentEvent.EventTime;
+
+            // If the currentEvent type is ARRIVAL then we either find a doctor or put the
+            // patient in waiting queue
+            if (currentEvent.Type == EventType.ARRIVAL)
+            {
+                // Get index of available doctors
+                int availableDoctorIndex = AvailableDoctor(doctorStatus, currentEvent.Patient.LevelOfEmergency);
+
+                // If there no doctor available/cant pre-empt, then index is -1, add patient to waiting queue
+                // If there is doctors available, then check level doctor is operating or if doctor is available (0)
+                if (availableDoctorIndex == -1)
+                {
+                    // Add the patient to waitingQueue
+                    if (currentEvent.Patient.LevelOfEmergency == 3) waitingQueue3.Enqueue(currentEvent);
+                    else if (currentEvent.Patient.LevelOfEmergency == 2) waitingQueue2.Enqueue(currentEvent);
+                    else if (currentEvent.Patient.LevelOfEmergency == 1) waitingQueue1.Enqueue(currentEvent);
+                }
+                else
+                {
+                    if (doctorStatus[availableDoctorIndex] == 0)
+                    {
+                        // Assign the patient to the doctor, start departure event and store it in the queue
+                        doctorStatus[availableDoctorIndex] = currentEvent.Patient.LevelOfEmergency;
+                        Event departureEvent = new Event(currentEvent.Patient, EventType.DEPARTURE, 
+                            availableDoctorIndex + 1, currentTime + currentEvent.Patient.TreatmentTime);
+                        Priority.Insert(departureEvent);
+                    }
+                    else if (doctorStatus[availableDoctorIndex] > 0)
+                    {
+                        // Find the departure event based on doctor treating the patient
+                        for (int i = 1; i < Priority.Size(); i++)
+                        {
+                            if (Priority.PeekAt(i).DoctorAssigned == (availableDoctorIndex + 1))
+                            {
+                                // Update patient and reduce the treatement time and then create
+                                // arrival event and add the patient to the queue
+                                Patient previousPatient = Priority.PeekAt(i).Patient;
+                                previousPatient.ReduceTreatmentTime(Priority.PeekAt(i).EventTime - currentTime);
+                                Event previousEvent = new Event(previousPatient, EventType.ARRIVAL, -1, currentTime);
+                                
+                                // Put previousEvent into appropriate waiting queues
+                                if (Priority.PeekAt(i).Patient.LevelOfEmergency == 3)
+                                    waitingQueue3.Enqueue(previousEvent);
+                                else if (Priority.PeekAt(i).Patient.LevelOfEmergency == 2)
+                                    waitingQueue2.Enqueue(previousEvent);
+                                else if (Priority.PeekAt(i).Patient.LevelOfEmergency == 1)
+                                    waitingQueue1.Enqueue(previousEvent);
+                                
+                                Priority.RemoveAt(i);
+                                break;
+                            }
+                        }
+
+                        // Assign the patient to the doctor, start departure event and store it in the queue
+                        doctorStatus[availableDoctorIndex] = currentEvent.Patient.LevelOfEmergency;
+                        Event departureEvent = new Event(currentEvent.Patient, EventType.DEPARTURE, 
+                            availableDoctorIndex + 1, currentTime + currentEvent.Patient.TreatmentTime);
+                        Priority.Insert(departureEvent);
+                    }
+                }
+            }
         }
 
 
     }
 
-    // Summary: GeneratePatients(int, int) generates patients' arrival in the PriorityQueue
-    //          based on the meanTreatment and meanArrival
+    // Summary: Private helper function that returns the index of doctor that is available
+    //          and based on emergency level
+    private int AvailableDoctor(int[] doctors, int level)
+    {
+        // For loop for available doctor (0)
+        for (int i = 0; i < doctors.Length; i++)
+        {
+            if (doctors[i] == 0)
+            {
+                return i;
+            }
+        }
+
+        // For loop for busy doctor treating lower level
+        for (int i = 0; i < doctors.Length; i++)
+        {
+            if (doctors[i] < level)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // Summary: Private helper GeneratePatients(int, int) generates patients' arrival in
+    //          the PriorityQueue based on the meanTreatment and meanArrival
     private void GeneratePatients(int meanTreatment, int meanArrival)
     {
         // currentTime variable that starts from 9am (0900), seconds 32,400
@@ -481,7 +574,7 @@ class Program
 {
     public static void Main(String[] args)
     {
-        PriorityQueue<Event>? priorityQueue = new PriorityQueue<Event>();
+        /*PriorityQueue<Event>? priorityQueue = new PriorityQueue<Event>();
 
         // currentTime variable that starts from 9am (0900), seconds 32,400
         int currentTime = 32400;
@@ -514,7 +607,7 @@ class Program
             Console.WriteLine("Patient(" + priorityQueue.Front().Patient.PatientNumber + ") arrived at " + priorityQueue.Front().EventTime + " Level(" + priorityQueue.Front().Patient.LevelOfEmergency + ")");
             priorityQueue.RemoveAt(1);
         }
-
+*/
         /*int i = 0;
         while (i < 20)
         {
