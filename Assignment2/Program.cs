@@ -501,6 +501,7 @@ class Simulation
                                 else if (Priority.PeekAt(i).Patient.LevelOfEmergency == 1)
                                     waitingQueue1.Enqueue(previousEvent);
                                 
+                                // Remove the event from priority
                                 Priority.RemoveAt(i);
                                 break;
                             }
@@ -589,13 +590,19 @@ class Simulation
         }
 
         // Output the total average wait time for each level and all together with numbers of doctors available
-        Console.WriteLine("\n\nLevel 3 Total Wait Time = " + waitTime3 + ", Number of Patient = " + numOf3 + ", Average Wait Time = " + ((double)waitTime3/(double)numOf3));
-        Console.WriteLine("Level 2 Total Wait Time = " + waitTime2 + ", Number of Patient = " + numOf2 + ", Average Wait Time = " + ((double)waitTime2 / (double)numOf2));
+        Console.WriteLine("\n\nNumber of Doctors: " + numberOfdoctors);
         Console.WriteLine("Level 1 Total Wait Time = " + waitTime1 + ", Number of Patient = " + numOf1 + ", Average Wait Time = " + ((double)waitTime1 / (double)numOf1));
+        Console.WriteLine("Level 2 Total Wait Time = " + waitTime2 + ", Number of Patient = " + numOf2 + ", Average Wait Time = " + ((double)waitTime2 / (double)numOf2));
+        Console.WriteLine("Level 3 Total Wait Time = " + waitTime3 + ", Number of Patient = " + numOf3 + ", Average Wait Time = " + ((double)waitTime3/(double)numOf3));
+        
+        Console.WriteLine("\n\n" + waitTime1 + ", " + numOf1 + ", " + ((double)waitTime1 / (double)numOf1) + ", " + waitTime2 + ", " + numOf2 + ", " + ((double)waitTime2 / (double)numOf2) + ", " + waitTime3 + ", " + numOf3 + ", " + ((double)waitTime3 / (double)numOf3));
+
         int totalWaitTime = waitTime1 + waitTime2 + waitTime3;
         int totalPatients = numOf1 + numOf2 + numOf3;
         Console.WriteLine("Total Wait Time = " + totalWaitTime + ", Total Number of Patient = " 
             + totalPatients + ", Total Average Wait Time = " + ((double)totalWaitTime / (double)totalPatients));
+
+        Console.WriteLine("\n\n" + totalWaitTime + ", " + totalPatients + ", " + ((double)totalWaitTime / (double)totalPatients));
     }
 
     // Summary: Private helper function that returns the index of doctor that is available
@@ -678,6 +685,6 @@ class Program
     public static void Main(String[] args)
     {
         Simulation s = new Simulation();
-        s.RunSimulation(300, 100, 4);
+        s.RunSimulation(360, 180, 4);
     }
 }
