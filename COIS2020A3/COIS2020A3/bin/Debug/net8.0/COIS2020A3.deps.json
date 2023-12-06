@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "COIS2020A3/1.0.0": {
+        "runtime": {
+          "COIS2020A3.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "COIS2020A3/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

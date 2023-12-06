@@ -1,0 +1,14 @@
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\bin\Debug\net8.0\COIS2020A3.exe
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\bin\Debug\net8.0\COIS2020A3.deps.json
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\bin\Debug\net8.0\COIS2020A3.runtimeconfig.json
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\bin\Debug\net8.0\COIS2020A3.dll
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\bin\Debug\net8.0\COIS2020A3.pdb
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.AssemblyInfoInputs.cache
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.AssemblyInfo.cs
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.csproj.CoreCompileInputs.cache
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.dll
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\refint\COIS2020A3.dll
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.pdb
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\COIS2020A3.genruntimeconfig.cache
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net8.0\ref\COIS2020A3.dll
