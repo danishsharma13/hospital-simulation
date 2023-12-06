@@ -1,0 +1,4 @@
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net6.0\COIS2020A3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net6.0\COIS2020A3.AssemblyInfoInputs.cache
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net6.0\COIS2020A3.AssemblyInfo.cs
+C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\obj\Debug\net6.0\COIS2020A3.csproj.CoreCompileInputs.cache
