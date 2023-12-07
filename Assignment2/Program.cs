@@ -685,6 +685,6 @@ class Program
     public static void Main(String[] args)
     {
         Simulation s = new Simulation();
-        s.RunSimulation(360, 180, 4);
+        s.RunSimulation(360, 180, 6);
     }
 }

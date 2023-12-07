@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "VumQkPNBb0qXjx0UcUi2gAtXM3a3HfWP4XlE1u+9qxvftb02Zyk/1F4wDzPCSrjIWYuQnZv7vG2ILN97fey2tA==",
+  "dgSpecHash": "LPlesz9k3pBCMhqQALQOVLW4hmu382lsM92IteOdD+DRcZzNglM8W/vjQ4EpSxBcX/viOnk9Av1HUvS6dWIPog==",
   "success": true,
-  "projectFilePath": "C:\\Users\\danis\\Desktop\\Trent Fall 2023\\COIS2020H\\Week 7\\Assignment2\\Assignment2\\Assignment2.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\rxalp\\2020A2\\hospital-simulation\\Assignment2\\Assignment2.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\rxalp\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.23\\microsoft.netcore.app.ref.6.0.23.nupkg.sha512",
+    "C:\\Users\\rxalp\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.23\\microsoft.windowsdesktop.app.ref.6.0.23.nupkg.sha512",
+    "C:\\Users\\rxalp\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.23\\microsoft.aspnetcore.app.ref.6.0.23.nupkg.sha512",
+    "C:\\Users\\rxalp\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.23\\microsoft.netcore.app.host.win-x64.6.0.23.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -1,13 +1,17 @@
-﻿using System;
+﻿// Import necessary libraries
+using System;
 using System.Collections.Generic;
 
+// Define the main program class
 public class Program
 {
+    // Entry point of the program
     public static void Main(string[] args)
     {
         // Create an instance of SplayTree
         SplayTree<int> tree = new SplayTree<int>();
 
+        // Display menu options and handle user input
         while (true)
         {
             Console.WriteLine("1. Insert");
@@ -18,11 +22,13 @@ public class Program
             Console.WriteLine("6. Exit");
             Console.Write("Enter your choice: ");
 
+            // Validate and process user input
             if (int.TryParse(Console.ReadLine(), out int choice))
             {
                 switch (choice)
                 {
                     case 1:
+                        // Insert operation
                         Console.Write("Enter value to insert: ");
                         if (int.TryParse(Console.ReadLine(), out int insertValue))
                         {
@@ -36,6 +42,7 @@ public class Program
                         break;
 
                     case 2:
+                        // Remove operation
                         Console.Write("Enter value to remove: ");
                         if (int.TryParse(Console.ReadLine(), out int removeValue))
                         {
@@ -49,6 +56,7 @@ public class Program
                         break;
 
                     case 3:
+                        // Check containment operation
                         Console.Write("Enter value to check if it contains: ");
                         if (int.TryParse(Console.ReadLine(), out int containsValue))
                         {
@@ -62,6 +70,7 @@ public class Program
                         break;
 
                     case 4:
+                        // Undo operation
                         try
                         {
                             tree.Undo();
@@ -74,21 +83,25 @@ public class Program
                         break;
 
                     case 5:
+                        // Print tree operation
                         Console.WriteLine("Tree structure:");
                         tree.PrintTree();
                         break;
 
                     case 6:
+                        // Exit the program
                         Console.WriteLine("Exiting program.");
                         return;
 
                     default:
+                        // Invalid choice
                         Console.WriteLine("Invalid choice. Please enter a number between 1 and 6.");
                         break;
                 }
             }
             else
             {
+                // Invalid input
                 Console.WriteLine("Invalid input. Please enter a number.");
             }
 
@@ -97,25 +110,30 @@ public class Program
     }
 }
 
+// Define a generic SplayTree class
 public class SplayTree<T> where T : IComparable<T>
 {
+    // Define a Node class for the Splay Tree
     public class Node<U>
     {
         public U item = default!;
         public Node<U>? left, right;
     }
 
+    // Private members of the SplayTree class
     private Node<T>? root = null;
     private Node<T>? previousRoot = null;  // Track the previous root for undo operation
 
+    // Public property to access the root of the tree
     public Node<T>? Root => root;
 
+    // Constructor to initialize the SplayTree with a root node
     public SplayTree()
     {
-        // Initialize the root node
         root = new Node<T>();
     }
 
+    // Helper method to access a node and track the path
     private Stack<T> Access(T item)
     {
         Stack<T> path = new Stack<T>();
@@ -144,6 +162,7 @@ public class SplayTree<T> where T : IComparable<T>
         return path;
     }
 
+    // Helper method to perform the Splay operation
     private void Splay(Node<T>? p, Stack<T> S)
     {
         while (S.Count > 0 && p != null)
@@ -181,6 +200,7 @@ public class SplayTree<T> where T : IComparable<T>
         root = p;
     }
 
+    // Method to insert a value into the SplayTree
     public void Insert(T item)
     {
         if (root == null)
@@ -211,6 +231,7 @@ public class SplayTree<T> where T : IComparable<T>
         root = newNode;
     }
 
+    // Method to remove a value from the SplayTree
     public void Remove(T item)
     {
         Stack<T> path = Access(item);
@@ -238,12 +259,14 @@ public class SplayTree<T> where T : IComparable<T>
         }
     }
 
+    // Method to check if a value is contained in the SplayTree
     public bool Contains(T item)
     {
         Stack<T> path = Access(item);
         return (path.Count > 0 && item.CompareTo(path.Peek()) == 0);
     }
 
+    // Method to create a clone of the SplayTree
     public object Clone()
     {
         SplayTree<T> clonedTree = new SplayTree<T>();
@@ -251,9 +274,9 @@ public class SplayTree<T> where T : IComparable<T>
         return clonedTree;
     }
 
+    // Helper method for cloning the SplayTree
     private void CloneHelper(Node<T>? original, ref Node<T>? cloned)
-    {
-        if (original != null)
+    {if (original != null)
         {
             cloned = new Node<T>() { item = original.item };
             CloneHelper(original.left, ref cloned.left);
@@ -261,6 +284,7 @@ public class SplayTree<T> where T : IComparable<T>
         }
     }
 
+    // Method to compare two SplayTrees for equality
     public override bool Equals(object? obj)
     {
         if (obj is SplayTree<T> otherTree)
@@ -270,6 +294,7 @@ public class SplayTree<T> where T : IComparable<T>
         return false;
     }
 
+    // Helper method for comparing SplayTrees for equality
     private bool EqualsHelper(Node<T>? node1, Node<T>? node2)
     {
         if (node1 == null && node2 == null)
@@ -287,6 +312,7 @@ public class SplayTree<T> where T : IComparable<T>
                EqualsHelper(node1.right, node2.right);
     }
 
+    // Method to undo the last insertion operation
     public SplayTree<T> Undo()
     {
         if (previousRoot == null)
@@ -300,11 +326,13 @@ public class SplayTree<T> where T : IComparable<T>
         return this;
     }
 
+    // Method to print the structure of the SplayTree
     public void PrintTree()
     {
         PrintTree(root, 0);
     }
 
+    // Helper method for printing the structure of the SplayTree
     private void PrintTree(Node<T>? root, int indent)
     {
         if (root != null)
@@ -316,6 +344,7 @@ public class SplayTree<T> where T : IComparable<T>
         }
     }
 
+    // Method to calculate the hash code for the SplayTree
     public override int GetHashCode()
     {
         // Implement a hash code calculation based on the properties of your class.
@@ -323,4 +352,3 @@ public class SplayTree<T> where T : IComparable<T>
         return root?.item?.GetHashCode() ?? 0;
     }
 }
-

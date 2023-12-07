@@ -12,3 +12,17 @@ C:\Users\danis\Desktop\Trent Fall 2023\COIS2020H\Week 7\Assignment2\Assignment2\
 C:\Users\danis\Desktop\Trent Fall 2023\COIS2020H\Week 7\Assignment2\Assignment2\obj\Debug\net6.0\Assignment2.pdb
 C:\Users\danis\Desktop\Trent Fall 2023\COIS2020H\Week 7\Assignment2\Assignment2\obj\Debug\net6.0\Assignment2.genruntimeconfig.cache
 C:\Users\danis\Desktop\Trent Fall 2023\COIS2020H\Week 7\Assignment2\Assignment2\obj\Debug\net6.0\ref\Assignment2.dll
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\bin\Debug\net6.0\Assignment2.exe
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\bin\Debug\net6.0\Assignment2.deps.json
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\bin\Debug\net6.0\Assignment2.runtimeconfig.json
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\bin\Debug\net6.0\Assignment2.dll
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\bin\Debug\net6.0\Assignment2.pdb
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.AssemblyInfoInputs.cache
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.AssemblyInfo.cs
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.csproj.CoreCompileInputs.cache
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.dll
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\refint\Assignment2.dll
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.pdb
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\Assignment2.genruntimeconfig.cache
+C:\Users\rxalp\2020A2\hospital-simulation\Assignment2\obj\Debug\net6.0\ref\Assignment2.dll

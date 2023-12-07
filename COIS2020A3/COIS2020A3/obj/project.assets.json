@@ -8,24 +8,19 @@
     "net8.0": []
   },
   "packageFolders": {
-    "C:\\Users\\tusha\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\rxalp\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tusha\\source\\repos\\COIS2020A3\\COIS2020A3\\COIS2020A3.csproj",
+      "projectUniqueName": "C:\\Users\\rxalp\\2020A2\\hospital-simulation\\COIS2020A3\\COIS2020A3\\COIS2020A3.csproj",
       "projectName": "COIS2020A3",
-      "projectPath": "C:\\Users\\tusha\\source\\repos\\COIS2020A3\\COIS2020A3\\COIS2020A3.csproj",
-      "packagesPath": "C:\\Users\\tusha\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tusha\\source\\repos\\COIS2020A3\\COIS2020A3\\obj\\",
+      "projectPath": "C:\\Users\\rxalp\\2020A2\\hospital-simulation\\COIS2020A3\\COIS2020A3\\COIS2020A3.csproj",
+      "packagesPath": "C:\\Users\\rxalp\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\rxalp\\2020A2\\hospital-simulation\\COIS2020A3\\COIS2020A3\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\tusha\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\rxalp\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -33,7 +28,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

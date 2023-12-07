@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = COIS2020A3
-build_property.ProjectDir = C:\Users\tusha\source\repos\COIS2020A3\COIS2020A3\
+build_property.ProjectDir = C:\Users\rxalp\2020A2\hospital-simulation\COIS2020A3\COIS2020A3\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
