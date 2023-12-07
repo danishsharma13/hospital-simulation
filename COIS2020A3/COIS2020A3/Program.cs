@@ -5,7 +5,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Create an instance of SplayTree
         SplayTree<int> tree = new SplayTree<int>();
 
         while (true)
@@ -13,9 +12,8 @@ public class Program
             Console.WriteLine("1. Insert");
             Console.WriteLine("2. Remove");
             Console.WriteLine("3. Check if contains");
-            Console.WriteLine("4. Undo");
-            Console.WriteLine("5. Print tree");
-            Console.WriteLine("6. Exit");
+            Console.WriteLine("4. Print tree");
+            Console.WriteLine("5. Exit");
             Console.Write("Enter your choice: ");
 
             if (int.TryParse(Console.ReadLine(), out int choice))
@@ -27,7 +25,7 @@ public class Program
                         if (int.TryParse(Console.ReadLine(), out int insertValue))
                         {
                             tree.Insert(insertValue);
-                            Console.WriteLine("Value inserted successfully.");
+                            Console.WriteLine($"Value {insertValue} inserted successfully.");
                         }
                         else
                         {
@@ -39,8 +37,10 @@ public class Program
                         Console.Write("Enter value to remove: ");
                         if (int.TryParse(Console.ReadLine(), out int removeValue))
                         {
-                            tree.Remove(removeValue);
-                            Console.WriteLine("Value removed successfully.");
+                            bool removed = tree.Remove(removeValue);
+                            Console.WriteLine(removed
+                                ? $"Value {removeValue} removed successfully."
+                                : $"Value {removeValue} not found in the tree.");
                         }
                         else
                         {
@@ -62,28 +62,16 @@ public class Program
                         break;
 
                     case 4:
-                        try
-                        {
-                            tree.Undo();
-                            Console.WriteLine("Undo successful.");
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-                        break;
-
-                    case 5:
-                        Console.WriteLine("Tree structure:");
+                        Console.WriteLine("Tree structure (largest to smallest):");
                         tree.PrintTree();
                         break;
 
-                    case 6:
-                        Console.WriteLine("Exiting program.");
-                        return;
+                    case 5:
+                        Environment.Exit(0);
+                        break;
 
                     default:
-                        Console.WriteLine("Invalid choice. Please enter a number between 1 and 6.");
+                        Console.WriteLine("Invalid choice. Please enter a number between 1 and 5.");
                         break;
                 }
             }
@@ -99,228 +87,214 @@ public class Program
 
 public class SplayTree<T> where T : IComparable<T>
 {
-    public class Node<U>
+    private class Node
     {
-        public U item = default!;
-        public Node<U>? left, right;
-    }
+        public T Value;
+        public Node Left, Right;
 
-    private Node<T>? root = null;
-    private Node<T>? previousRoot = null;  // Track the previous root for undo operation
-
-    public Node<T>? Root => root;
-
-    public SplayTree()
-    {
-        // Initialize the root node
-        root = new Node<T>();
-    }
-
-    private Stack<T> Access(T item)
-    {
-        Stack<T> path = new Stack<T>();
-        Node<T>? current = root;
-
-        while (current != null)
+        public Node(T value)
         {
-            path.Push(current.item);
-
-            int compareResult = item.CompareTo(current.item);
-
-            if (compareResult == 0)
-            {
-                break;
-            }
-            else if (compareResult < 0)
-            {
-                current = current.left;
-            }
-            else
-            {
-                current = current.right;
-            }
+            Value = value;
+            Left = Right = null;
         }
-
-        return path;
     }
 
-    private void Splay(Node<T>? p, Stack<T> S)
+    private Node Root;
+
+    public void Insert(T value)
     {
-        while (S.Count > 0 && p != null)
-        {
-            T x = S.Pop();
-
-            int compareResult = x.CompareTo(p.item);
-
-            if (compareResult == 0)
-            {
-                break;
-            }
-            else if (compareResult < 0)
-            {
-                if (p.left != null)
-                {
-                    Node<T>? q = p.left;
-                    p.left = q.right;
-                    q.right = p;
-                    p = q;
-                }
-            }
-            else
-            {
-                if (p.right != null)
-                {
-                    Node<T>? q = p.right;
-                    p.right = q.left;
-                    q.left = p;
-                    p = q;
-                }
-            }
-        }
-
-        root = p;
+        Root = InsertRecursive(Root, value);
     }
 
-    public void Insert(T item)
+    private Node InsertRecursive(Node root, T value)
     {
         if (root == null)
+            return new Node(value);
+
+        int compareResult = value.CompareTo(root.Value);
+
+        if (compareResult < 0)
         {
-            root = new Node<T>() { item = item };
-            previousRoot = null;
-            return;
+            root.Left = InsertRecursive(root.Left, value);
+        }
+        else if (compareResult > 0)
+        {
+            root.Right = InsertRecursive(root.Right, value);
         }
 
-        previousRoot = root;  // Save the current root for potential undo
-        Stack<T> path = Access(item);
+        // Splay the inserted node to the root
+        return Splay(root, value);
+    }
 
-        Node<T>? newNode = new Node<T>() { item = item };
+    public bool Remove(T value)
+    {
+        Root = RemoveRecursive(Root, value);
+        return Root != null; // Node found and removed
+    }
 
-        if (item.CompareTo(path.Peek()) < 0)
+    private Node RemoveRecursive(Node root, T value)
+    {
+        if (root == null)
+            return null; // Node not found
+
+        int compareResult = value.CompareTo(root.Value);
+
+        if (compareResult < 0)
         {
-            newNode.left = root.left;
-            newNode.right = root;
-            root.left = null;
+            root.Left = RemoveRecursive(root.Left, value);
+        }
+        else if (compareResult > 0)
+        {
+            root.Right = RemoveRecursive(root.Right, value);
         }
         else
         {
-            newNode.right = root.right;
-            newNode.left = root;
-            root.right = null;
+            // Node with the value found, splay the predecessor to the root
+            root = SplayPredecessor(root);
         }
 
-        root = newNode;
+        return root;
     }
 
-    public void Remove(T item)
+    private Node SplayPredecessor(Node root)
     {
-        Stack<T> path = Access(item);
+        if (root.Left == null)
+            return root.Right;
 
-        if (item.CompareTo(path.Peek()) != 0)
-        {
-            return; // item not found
-        }
+        Node predecessor = FindMax(root.Left);
+        root.Left = RemoveMax(root.Left);
+        predecessor.Left = root.Left;
+        predecessor.Right = root.Right;
 
-        Node<T>? leftSubtree = root?.left;
-        Node<T>? rightSubtree = root?.right;
-
-        if (leftSubtree != null)
-        {
-            Node<T>? newRoot = leftSubtree;
-            root = leftSubtree;
-
-            Access(item); // move item to the root of the left subtree
-
-            root.right = rightSubtree; // attach the right subtree
-        }
-        else
-        {
-            root = rightSubtree; // no left subtree, simply move right subtree up
-        }
+        return predecessor;
     }
 
-    public bool Contains(T item)
+    private Node FindMax(Node root)
     {
-        Stack<T> path = Access(item);
-        return (path.Count > 0 && item.CompareTo(path.Peek()) == 0);
+        while (root.Right != null)
+        {
+            root = root.Right;
+        }
+        return root;
     }
 
-    public object Clone()
+    private Node RemoveMax(Node root)
     {
-        SplayTree<T> clonedTree = new SplayTree<T>();
-        CloneHelper(root, ref clonedTree.root);
-        return clonedTree;
+        if (root.Right == null)
+            return root.Left;
+
+        root.Right = RemoveMax(root.Right);
+        return root;
     }
 
-    private void CloneHelper(Node<T>? original, ref Node<T>? cloned)
+    public bool Contains(T value)
     {
-        if (original != null)
-        {
-            cloned = new Node<T>() { item = original.item };
-            CloneHelper(original.left, ref cloned.left);
-            CloneHelper(original.right, ref cloned.right);
-        }
+        Root = ContainsRecursive(Root, value);
+        return Root != null; // Node found
     }
 
-    public override bool Equals(object? obj)
+    private Node ContainsRecursive(Node root, T value)
     {
-        if (obj is SplayTree<T> otherTree)
-        {
-            return EqualsHelper(root, otherTree.root);
-        }
-        return false;
-    }
+        if (root == null)
+            return null; // Node not found
 
-    private bool EqualsHelper(Node<T>? node1, Node<T>? node2)
-    {
-        if (node1 == null && node2 == null)
-        {
-            return true;
-        }
+        int compareResult = value.CompareTo(root.Value);
 
-        if (node1 == null || node2 == null)
+        if (compareResult < 0)
         {
-            return false;
+            root.Left = ContainsRecursive(root.Left, value);
+        }
+        else if (compareResult > 0)
+        {
+            root.Right = ContainsRecursive(root.Right, value);
         }
 
-        return node1.item.Equals(node2.item) &&
-               EqualsHelper(node1.left, node2.left) &&
-               EqualsHelper(node1.right, node2.right);
-    }
-
-    public SplayTree<T> Undo()
-    {
-        if (previousRoot == null)
-        {
-            throw new InvalidOperationException("Undo is only supported after an insertion.");
-        }
-
-        root = previousRoot;
-        previousRoot = null;  // Reset previousRoot after undoing the operation
-
-        return this;
+        // Splay the accessed node to the root
+        return Splay(root, value);
     }
 
     public void PrintTree()
     {
-        PrintTree(root, 0);
+        PrintTreeRecursive(Root, 0);
     }
 
-    private void PrintTree(Node<T>? root, int indent)
+    private void PrintTreeRecursive(Node root, int indent)
     {
         if (root != null)
         {
-            PrintTree(root.right, indent + 4);
+            PrintTreeRecursive(root.Right, indent + 4);
             Console.Write(new string(' ', indent));
-            Console.WriteLine(root.item);
-            PrintTree(root.left, indent + 4);
+            Console.WriteLine(root.Value);
+            PrintTreeRecursive(root.Left, indent + 4);
         }
     }
 
-    public override int GetHashCode()
+    private Node Splay(Node root, T value)
     {
-        // Implement a hash code calculation based on the properties of your class.
-        // For simplicity, you can use the hash code of the root node's item.
-        return root?.item?.GetHashCode() ?? 0;
+        if (root == null)
+            return null; // Node not found
+
+        int compareResult = value.CompareTo(root.Value);
+
+        if (compareResult < 0)
+        {
+            if (root.Left == null)
+                return root;
+
+            int compareResult2 = value.CompareTo(root.Left.Value);
+
+            if (compareResult2 < 0)
+            {
+                root.Left.Left = Splay(root.Left.Left, value);
+                root = RotateRight(root);
+            }
+            else if (compareResult2 > 0)
+            {
+                root.Left.Right = Splay(root.Left.Right, value);
+                if (root.Left.Right != null)
+                    root.Left = RotateLeft(root.Left);
+            }
+
+            return (root.Left == null) ? root : RotateRight(root);
+        }
+        else if (compareResult > 0)
+        {
+            if (root.Right == null)
+                return root;
+
+            int compareResult2 = value.CompareTo(root.Right.Value);
+
+            if (compareResult2 < 0)
+            {
+                root.Right.Left = Splay(root.Right.Left, value);
+                if (root.Right.Left != null)
+                    root.Right = RotateRight(root.Right);
+            }
+            else if (compareResult2 > 0)
+            {
+                root.Right.Right = Splay(root.Right.Right, value);
+                root = RotateLeft(root);
+            }
+
+            return (root.Right == null) ? root : RotateLeft(root);
+        }
+
+        return root;
+    }
+
+    private Node RotateRight(Node root)
+    {
+        Node newRoot = root.Left;
+        root.Left = newRoot.Right;
+        newRoot.Right = root;
+        return newRoot;
+    }
+
+    private Node RotateLeft(Node root)
+    {
+        Node newRoot = root.Right;
+        root.Right = newRoot.Left;
+        newRoot.Left = root;
+        return newRoot;
     }
 }
-
